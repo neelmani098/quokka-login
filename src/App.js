@@ -1,24 +1,33 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import Login from "./components/Login";
+import { Routes, Route } from "react-router-dom";
+import Dashboard from "./components/Dashboard";
+import { useState } from "react";
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    localStorage.getItem("isLoggedIn")
+  );
+
+  const loginStateChanged = (value) => {
+    setIsLoggedIn(value);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Routes>
+      <Route path="/" element={<Login loginState={loginStateChanged} />} />
+      <Route
+        path="/dashboard"
+        element={
+          isLoggedIn ? (
+            <Dashboard />
+          ) : (
+            <Login message="Login to Continue" loginState={loginStateChanged} />
+          )
+        }
+      />
+      } />
+    </Routes>
   );
 }
 
