@@ -1,6 +1,6 @@
 import styles from "./Login.module.css";
-import { useState } from "react";
-import { Route, useNavigate } from "react-router-dom";
+import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 import isEmail from "validator/es/lib/isEmail";
 
@@ -10,61 +10,51 @@ const LOGINCRED = {
 };
 
 const Login = (props) => {
-  const [isEmailValid, setIsEmailValid] = useState(false);
-  const [isPasswordValid, setIsPasswordValid] = useState(false);
-  const [isEmailTouched, setIsEmailTouched] = useState(false);
-  const [isPasswordTouched, setIsPasswordTouched] = useState(false);
-  const [isFormValid, setIsFormValid] = useState(true);
+  const [formInputValidity, setFormInputValidity] = useState({
+    email: true,
+    password: true,
+  });
+
+  const [isValidCred, setIsValidCred] = useState(true);
+
+  const emailInputRef = useRef();
+  const passwordInputRef = useRef();
 
   let navigate = useNavigate();
 
-  const [formInput, setIsFormInput] = useState({
-    email: "",
-    password: "",
-  });
-
-  const onEmailChangeHandler = (event) => {
-    event.preventDefault();
-    setIsEmailTouched(true);
-    setIsFormInput({
-      ...formInput,
-      email: event.target.value.toLowerCase(),
-    });
-    setIsEmailValid(isEmail(formInput.email));
-    // setIsFormValid(isEmailValid && isPasswordValid);
-  };
-
-  const onPasswordChangeHandler = (event) => {
-    setIsPasswordTouched(true);
-    setIsFormInput({
-      ...formInput,
-      password: event.target.value,
-    });
-
-    setIsPasswordValid(formInput.password.trim().length >= 7);
-    // setIsFormValid(isPasswordValid && isEmailValid);
-  };
-
   const onSubmitHandler = (event) => {
     event.preventDefault();
-    setIsFormValid(isEmailValid && isPasswordValid);
 
-    if (!isFormValid) {
+    const enteredEmail = emailInputRef.current.value;
+    const enteredPassword = passwordInputRef.current.value;
+
+    const enteredEmailIsValid = isEmail(enteredEmail);
+    const enteredPasswordIsValid = enteredPassword.trim().length >= 7;
+
+    setFormInputValidity({
+      email: enteredEmailIsValid,
+      password: enteredPasswordIsValid,
+    });
+
+    const formIsValid = enteredEmailIsValid && enteredPasswordIsValid;
+
+    if (!formIsValid) {
+      console.log("Form is Invalid");
       return;
     }
-    const isCredValid =
-      formInput.email === LOGINCRED.email &&
-      formInput.password === LOGINCRED.password;
 
-    if (isCredValid) {
+    if (
+      LOGINCRED.email === enteredEmail &&
+      LOGINCRED.password === enteredPassword
+    ) {
+      setIsValidCred(true);
       localStorage.setItem("isLoggedIn", true);
-      props.loginState(true);
+      props.loginState();
       navigate("/dashboard", { replace: true });
     } else {
-      localStorage.setItem("isLoggedIn", true);
+      localStorage.setItem("isLoggedIn", false);
+      setIsValidCred(false);
     }
-    console.log(isCredValid);
-    console.log("Working");
   };
 
   return (
@@ -72,28 +62,26 @@ const Login = (props) => {
       <div className={styles.center_form}>
         <div className="w-full max-w-xs">
           <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-            {/*{!isFormValid && (*/}
-            {/*  <p className="text-red-500 text-xs italic">{props.message}</p>*/}
-            {/*)}*/}
-
-            <p className="text-red-500 text-xs italic">{props.message}</p>
+            {!isValidCred && (
+              <p className="text-red-500 text-xs italic">
+                Incorrect Email Password
+              </p>
+            )}
             <div className="mb-4">
               <label
                 className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="username"
+                htmlFor="email"
               >
                 Email
               </label>
               <input
                 className="shadow appearance-none border  rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-                id="username"
+                id="email"
                 type="text"
                 placeholder="Email"
-                value={formInput.email}
-                onChange={onEmailChangeHandler}
-                onBlur={onEmailChangeHandler}
+                ref={emailInputRef}
               />
-              {!isEmailValid && isEmailTouched && (
+              {!formInputValidity.email && (
                 <p className="text-red-500 text-xs italic">
                   Please enter valid Email Address.
                 </p>
@@ -111,14 +99,11 @@ const Login = (props) => {
                 id="password"
                 type="password"
                 placeholder="******************"
-                onChange={onPasswordChangeHandler}
-                onBlur={onPasswordChangeHandler}
-                value={formInput.password}
+                ref={passwordInputRef}
               />
-              {/*  border-red-500*/}
-              {!isPasswordValid && isPasswordTouched && (
+              {!formInputValidity.password && (
                 <p className="text-red-500 text-xs italic">
-                  Please choose a password of minimum 8 Length.
+                  Please enter valid Password of 8 Characters or more.
                 </p>
               )}
             </div>
