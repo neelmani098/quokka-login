@@ -1,32 +1,34 @@
 import "./App.css";
 import Login from "./components/Login";
 import { Routes, Route } from "react-router-dom";
+import { useLocalStorage } from "react-use";
 import Dashboard from "./components/Dashboard";
-import { useState } from "react";
 
 function App() {
-  const userLoggedIn = localStorage.getItem("isLoggedIn");
+  const [loggedIn, setLoggedIn, remove] = useLocalStorage("isLogged", false);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(userLoggedIn);
-
-  const loginStateChanged = () => {
-    setIsLoggedIn(localStorage.getItem("isLoggedIn"));
-    console.log("executed");
+  const loginHandler = (value) => {
+    setLoggedIn(value);
+    console.log(loggedIn);
+    console.log("You Logged In");
   };
 
-  console.log(isLoggedIn);
-
-  let dashboardPage = "";
-  if (isLoggedIn === true) {
-    dashboardPage = <Dashboard />;
-  } else {
-    dashboardPage = <Login />;
-  }
+  const logoutHandler = (value) => {
+    setLoggedIn(value);
+  };
 
   return (
     <Routes>
-      <Route path="/" element={<Login loginState={loginStateChanged} />} />
-      <Route path="/dashboard" element={dashboardPage} />
+      <Route path="/" element={<Login login={loginHandler} />} />
+      {loggedIn && (
+        <Route
+          path="/dashboard"
+          element={<Dashboard logout={logoutHandler} />}
+        />
+      )}
+      {!loggedIn && (
+        <Route path="/dashboard" element={<Login login={loginHandler} />} />
+      )}
     </Routes>
   );
 }

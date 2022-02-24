@@ -20,7 +20,7 @@ const Login = (props) => {
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
 
-  let navigate = useNavigate();
+  const navigate = useNavigate();
 
   const onSubmitHandler = (event) => {
     event.preventDefault();
@@ -39,7 +39,6 @@ const Login = (props) => {
     const formIsValid = enteredEmailIsValid && enteredPasswordIsValid;
 
     if (!formIsValid) {
-      console.log("Form is Invalid");
       return;
     }
 
@@ -48,11 +47,13 @@ const Login = (props) => {
       LOGINCRED.password === enteredPassword
     ) {
       setIsValidCred(true);
-      localStorage.setItem("isLoggedIn", true);
-      props.loginState();
+      // localStorage.setItem("loggedIn", true);
+      props.login(true);
+      console.log("hey it should work");
       navigate("/dashboard", { replace: true });
     } else {
-      localStorage.setItem("isLoggedIn", false);
+      // localStorage.setItem("loggedIn", false);
+      props.login(false);
       setIsValidCred(false);
     }
   };
